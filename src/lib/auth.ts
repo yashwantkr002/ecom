@@ -16,14 +16,14 @@ export const authOptions: NextAuthOptions = {
         },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         // Validate input
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Invalid credentials");
         }
 
         try {
-          await connectDB;
+          await connectDB();
           // find user in database
           const user = await User.findOne({ email: credentials.email });
           if (!user) {
@@ -80,6 +80,9 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
 
-  // secre key
+  // secret key
   secret: process.env.NEXTAUTH_SECRET,
+
+  // base path for custom route
+  basePath: "/api/v1/auth",
 };

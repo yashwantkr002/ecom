@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-
-
 const MONGODB_URI = process.env.MONGODB_URI!;
 if (!MONGODB_URI) {
   throw new Error(
@@ -16,25 +14,34 @@ if (!cached) {
 
 const connectDB = async () => {
     if (cached.conn) {
-        console.log("Using existing connection", cached.conn.host);
+        console.log("✅Using existing connection", cached.conn.host);
         return cached.conn;
     }
     if (!cached.promise) {
         const opts = {
-            bufferCommands: true,
+            bufferCommands: false,
             maxPoolSize: 10,
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
         };
+        
+        console.log("🔄 Attempting MongoDB connection...");
         cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
-            console.log("New connection:", mongooseInstance.connection.host);
+            console.log("✅ New connection:", mongooseInstance.connection.host);
             return mongooseInstance.connection;
+        }).catch((error) => {
+            console.error("❌ MongoDB connection failed:", error.message);
+            cached.promise = null;
+            throw error;
         });
     }
     try {
         cached.conn = await cached.promise;
-        console.log("Database connected:", cached.conn.host);
-    } catch (e) {
+        console.log("✅ Database connected:", cached.conn.host);
+    } catch (e: any) {
         cached.promise = null;
-        throw e;
+        console.error("❌ Database connection error:", e.message);
+        throw new Error(`Database connection failed: ${e.message}`);
     }
     return cached.conn;
 };

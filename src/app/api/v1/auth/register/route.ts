@@ -7,10 +7,47 @@ export const POST = async (request:NextRequest)=>{
    try {
     const { email, password, phone, role } = await request.json();
     await connectDB();
+    
     // Basic validation
     if (!phone || !email || !password || !role) {
       return NextResponse.json(
         { message: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { message: "Invalid email format" },
+        { status: 400 }
+      );
+    }
+
+    // Phone number validation - only numbers, spaces, +, -, and parentheses allowed
+    const phoneRegex = /^[\d\s\-+()]+$/;
+    if (!phoneRegex.test(phone)) {
+      return NextResponse.json(
+        { message: "Phone number must contain only numbers" },
+        { status: 400 }
+      );
+    }
+
+    // Check if phone has at least 10 digits
+    const digitsOnly = phone.replace(/\D/g, '');
+    if (digitsOnly.length < 10) {
+      return NextResponse.json(
+        { message: "Phone number must have at least 10 digits" },
+        { status: 400 }
+      );
+    }
+
+    // Password strength validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return NextResponse.json(
+        { message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character" },
         { status: 400 }
       );
     }
