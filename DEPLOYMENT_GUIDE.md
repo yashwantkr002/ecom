@@ -261,12 +261,20 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 - TypeScript errors
 - Missing dependencies
 - Build timeout
+- Pre-rendering errors
 
 **Solutions:**
 - Add all required environment variables
 - Fix TypeScript errors locally first
 - Run `npm install` and commit package-lock.json
 - Optimize build process
+- For pre-rendering errors, see [BUILD_FIX.md](BUILD_FIX.md)
+
+**Test Build Locally:**
+```bash
+npm run build
+```
+This will catch most build errors before deploying.
 
 ### OAuth Not Working:
 
