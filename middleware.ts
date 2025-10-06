@@ -12,9 +12,10 @@ export default withAuth(
 
         // Allow unauthenticated access to public routes
         if (
-          pathname.startsWith("/api/v1/auth") ||
+          pathname.startsWith("/api/auth") ||
           pathname === "/login" ||
           pathname === "/register" ||
+          pathname === "/verify-email" ||
           pathname === "/reset-password"
         ) {
           return true;

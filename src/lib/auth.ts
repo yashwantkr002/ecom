@@ -1,11 +1,21 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import FacebookProvider from "next-auth/providers/facebook";
 import connectDB from "./db";
 import User from "./models/user";
 
 export const authOptions: NextAuthOptions = {
   //   providers
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID!,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -34,9 +44,9 @@ export const authOptions: NextAuthOptions = {
           if (!isMatch) {
             throw new Error("Invalid credentials");
           }
-          // check is veryfide
+          // check is verified
           if (!user.isVerified) {
-            throw new Error("Please verify your email");
+            throw new Error("EMAIL_NOT_VERIFIED");
           }
 
           return {
@@ -53,9 +63,44 @@ export const authOptions: NextAuthOptions = {
 
   //   callbacks
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account }) {
+      if (account?.provider === "google" || account?.provider === "facebook") {
+        try {
+          await connectDB();
+
+          // Check if user exists
+          const existingUser = await User.findOne({ email: user.email });
+
+          if (!existingUser) {
+            // Create new user for OAuth
+            const newUser = new User({
+              email: user.email,
+              firstName: user.name?.split(" ")[0] || "",
+              lastName: user.name?.split(" ").slice(1).join(" ") || "",
+              image: user.image,
+              password: Math.random().toString(36).slice(-8), // Random password for OAuth users
+              phone: `oauth_${Date.now()}`, // Placeholder phone for OAuth users
+              role: "customer",
+              isVerified: true, // OAuth users are pre-verified
+            });
+            await newUser.save();
+            user.id = newUser._id.toString();
+          } else {
+            user.id = existingUser._id.toString();
+          }
+        } catch (error) {
+          console.error("OAuth sign in error:", error);
+          return false;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
+      }
+      if (account) {
+        token.provider = account.provider;
       }
       return token;
     },
@@ -82,7 +127,4 @@ export const authOptions: NextAuthOptions = {
 
   // secret key
   secret: process.env.NEXTAUTH_SECRET,
-
-  // base path for custom route
-  basePath: "/api/v1/auth",
 };
