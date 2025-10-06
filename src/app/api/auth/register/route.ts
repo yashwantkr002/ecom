@@ -70,8 +70,10 @@ export const POST = async (request:NextRequest)=>{
     // create new otp
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Log OTP for testing (remove in production)
-    console.log('🔐 OTP for', email, ':', otp);
+    // Log OTP only in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔐 OTP for', email, ':', otp);
+    }
     
     // Create new user
     const newUser = new User({
@@ -82,12 +84,19 @@ export const POST = async (request:NextRequest)=>{
       otp,
       otpExpires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from now
     });
+    
     // send otp to user
     const emailSent = await sendOTPEmail(email, otp);
     if (!emailSent) {
-      console.log('⚠️ Email failed to send, but OTP is:', otp);
-      // Continue anyway for testing
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⚠️ Email failed to send, but OTP is:', otp);
+      }
+      return NextResponse.json(
+        { message: "Failed to send verification email. Please try again." },
+        { status: 500 }
+      );
     }
+    
     await newUser.save();
     return NextResponse.json(
       { message: `User registered successfully and send otp ${email}` },

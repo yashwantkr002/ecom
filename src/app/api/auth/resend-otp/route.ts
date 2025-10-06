@@ -35,8 +35,10 @@ export async function POST(request: NextRequest) {
     // Generate new OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Log OTP for testing (remove in production)
-    console.log('🔐 Resent OTP for', email, ':', otp);
+    // Log OTP only in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔐 Resent OTP for', email, ':', otp);
+    }
     
     // Update user with new OTP
     user.otp = otp;
@@ -47,8 +49,13 @@ export async function POST(request: NextRequest) {
     const emailSent = await sendOTPEmail(email, otp);
     
     if (!emailSent) {
-      console.log('⚠️ Email failed to send, but OTP is:', otp);
-      // Continue anyway for testing
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⚠️ Email failed to send, but OTP is:', otp);
+      }
+      return NextResponse.json(
+        { message: 'Failed to send OTP email. Please try again.' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json(
