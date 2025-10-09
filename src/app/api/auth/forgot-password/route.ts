@@ -28,15 +28,11 @@ export async function POST(request: NextRequest) {
     const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
-      // Don't reveal if user exists or not for security
-      return NextResponse.json(
-        {
-          message:
-            "If an account exists with this email, you will receive a password reset link.",
-        },
-        { status: 200 }
-      );
-    }
+  return NextResponse.json(
+    { message: "User not found." },
+    { status: 404 }
+  );
+}
 
     // Generate OTP for password reset
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
