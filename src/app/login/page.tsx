@@ -27,7 +27,10 @@ export default function LoginPage() {
 
       if (result?.error) {
         if (result.error === 'EMAIL_NOT_VERIFIED') {
-          router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+          setError('Please verify your email first. Redirecting...');
+          setTimeout(() => {
+            router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+          }, 1500);
         } else {
           setError(result.error);
         }

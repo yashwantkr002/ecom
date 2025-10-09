@@ -16,6 +16,7 @@ export default withAuth(
           pathname === "/login" ||
           pathname === "/register" ||
           pathname === "/verify-email" ||
+          pathname === "/forgot-password" ||
           pathname === "/reset-password"
         ) {
           return true;

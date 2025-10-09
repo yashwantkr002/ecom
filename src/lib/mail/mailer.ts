@@ -268,7 +268,11 @@ const generateOTPEmailHTML = (otp: string): string => {
 };
 
 // Main function to send OTP email
-export const sendOTPEmail = async (to: string, otp: string): Promise<boolean> => {
+export const sendOTPEmail = async (
+  to: string,
+  otp: string,
+  type: string = "Email Verification"
+): Promise<boolean> => {
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -278,11 +282,16 @@ export const sendOTPEmail = async (to: string, otp: string): Promise<boolean> =>
       },
     });
 
+    const subject =
+      type === "Password Reset"
+        ? "Your Password Reset Code"
+        : "Your CityApp OTP Verification Code";
+
     const mailOptions = {
       from: `"CityApp" <${process.env.EMAIL_USER}>`,
       to,
-      subject: "Your CityApp OTP Verification Code",
-      text: `Your OTP code is: ${otp}. It is valid for 5 minutes.`, // Plain text fallback
+      subject,
+      text: `Your OTP code is: ${otp}. It is valid for 10 minutes.`, // Plain text fallback
       html: generateOTPEmailHTML(otp), // Modern HTML template
     };
 

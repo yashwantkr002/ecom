@@ -224,6 +224,13 @@ function VerifyEmailContent() {
             <p className="text-indigo-600 font-semibold mt-1">{email}</p>
           </div>
 
+          {/* Info Message */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
+            <p className="text-xs text-blue-800 text-center">
+              💡 <strong>Tip:</strong> Check your email for the verification code. If you don't see it, click "Resend Code" below.
+            </p>
+          </div>
+
           <form onSubmit={handleVerify} className="space-y-6">
             {/* OTP Input */}
             <div>
